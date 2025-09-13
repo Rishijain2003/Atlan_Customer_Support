@@ -22,7 +22,7 @@ load_dotenv()
 os.environ['OPENAI_API_KEY'] = os.getenv('Openai_api_key')
     
  
-class RAGSubgraph:
+class RAGAgent:
     
     def __init__(self, db_dir: str, model: str = "gpt-4o-mini"):
         self.db_dir = db_dir

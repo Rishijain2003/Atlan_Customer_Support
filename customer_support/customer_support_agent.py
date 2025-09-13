@@ -1,7 +1,7 @@
 import logging
 from langgraph.graph import StateGraph, START, END
 from langchain_openai import ChatOpenAI
-from rag import RAGSubgraph
+from rag_builder import RAGAgent
 from state import State
 from prompt import ticket_structure, classification_prompt,classifier_prompt
 from schema import Ticket, TicketClassification, AnswerWithSources,TicketClassificationModel
@@ -127,9 +127,9 @@ def last_node(state: State):
 def build_graph():
     parent = StateGraph(State)
 
-    dev_rag = RAGSubgraph("data/vector_store/developer_db").build()
-    doc_rag = RAGSubgraph("data/vector_store/atlan_document_db").build()
-    
+    dev_rag = RAGAgent("data/vector_store/developer_db").build()
+    doc_rag = RAGAgent("data/vector_store/atlan_document_db").build()
+
 
     # parent.add_node("extract_ticket", extract_ticket)
     parent.add_node("classify_ticket", classify_ticket)
