@@ -1,0 +1,25 @@
+# Virtual environment
+virtual/
+atlan_virtual_env/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+customer_support/data/vector_store/
+# Common environment/IDE stuff
+.env
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Build / distribution
+build/
+dist/
+*.egg-info/
+
+# Local vector database (do not push)
+rag_subgraph/data/vector_store/
