@@ -3,8 +3,9 @@ from langgraph.graph import StateGraph, START, END
 from langchain_openai import ChatOpenAI
 from rag import RAGSubgraph
 from state import State
-from prompt import ticket_structure, classification_prompt
-from schema import Ticket, TicketClassification, AnswerWithSources  
+from prompt import ticket_structure, classification_prompt,classifier_prompt
+from schema import Ticket, TicketClassification, AnswerWithSources,TicketClassificationModel
+
 
 
 logging.basicConfig(level=logging.INFO)
@@ -12,55 +13,84 @@ logger = logging.getLogger(__name__)
 from dotenv import load_dotenv
 import os
 
-def extract_ticket(state: State):
-    """Extract a structured ticket (id, subject, body) from the question."""
+# def extract_ticket(state: State):
+#     """Extract a structured ticket (id, subject, body) from the question."""
+#     question = state.get("question", "")
+#     if not question.strip():
+#         return {"error": "No question provided"}
+    
+#     load_dotenv()
+#     os.environ['OPENAI_API_KEY'] = os.getenv('Openai_api_key')
+    
+#     model = "gpt-4o-mini"
+#     llm = ChatOpenAI(temperature=0.7, model_name=model)
+
+#     formatted_prompt = ticket_structure.format(question=question)
+#     logger.info(f"Formatted ticket prompt: {formatted_prompt}")
+    
+#     structured_llm = llm.with_structured_output(Ticket)
+#     structured_ticket = structured_llm.invoke(formatted_prompt)
+    
+#     logger.info(f"Extracted ticket: {structured_ticket}")
+    
+#     return {
+#         "question": question,
+#         "id": structured_ticket.id,
+#         "subject": structured_ticket.subject,
+#         "body": structured_ticket.body,
+#     }
+
+# def classify_ticket(state: State):
+#     """Classify a structured ticket into topic, sentiment, and priority."""
+#     load_dotenv()
+#     os.environ['OPENAI_API_KEY'] = os.getenv('Openai_api_key')
+
+#     model = "gpt-4o-mini"
+#     llm = ChatOpenAI(temperature=0.7, model_name=model)
+
+#     ticket_classification = classification_prompt.format(
+#         id=state["id"],
+#         subject=state["subject"],
+#         body=state["body"],
+#     )
+#     logger.info(f"Formatted classification prompt: {ticket_classification}")
+    
+#     structured_llm = llm.with_structured_output(TicketClassification)
+#     result = structured_llm.invoke(ticket_classification)
+    
+#     logger.info(f"Ticket classification: {result}")
+    
+#     return {
+#         **state,  
+#         "topic_tag": result.topic_tag,
+#         "sentiment": result.sentiment,
+#         "priority": result.priority,
+#     }
+
+
+def classify_ticket(state: State):
+    """Classify a structured ticket into topic, sentiment, and priority."""
     question = state.get("question", "")
     if not question.strip():
         return {"error": "No question provided"}
     
     load_dotenv()
     os.environ['OPENAI_API_KEY'] = os.getenv('Openai_api_key')
-    
-    model = "gpt-4o-mini"
-    llm = ChatOpenAI(temperature=0.7, model_name=model)
-
-    formatted_prompt = ticket_structure.format(question=question)
-    logger.info(f"Formatted ticket prompt: {formatted_prompt}")
-    
-    structured_llm = llm.with_structured_output(Ticket)
-    structured_ticket = structured_llm.invoke(formatted_prompt)
-    
-    logger.info(f"Extracted ticket: {structured_ticket}")
-    
-    return {
-        "question": question,
-        "id": structured_ticket.id,
-        "subject": structured_ticket.subject,
-        "body": structured_ticket.body,
-    }
-
-def classify_ticket(state: State):
-    """Classify a structured ticket into topic, sentiment, and priority."""
-    load_dotenv()
-    os.environ['OPENAI_API_KEY'] = os.getenv('Openai_api_key')
 
     model = "gpt-4o-mini"
     llm = ChatOpenAI(temperature=0.7, model_name=model)
 
-    ticket_classification = classification_prompt.format(
-        id=state["id"],
-        subject=state["subject"],
-        body=state["body"],
-    )
+    ticket_classification = classifier_prompt.format(question = question)
     logger.info(f"Formatted classification prompt: {ticket_classification}")
     
-    structured_llm = llm.with_structured_output(TicketClassification)
+    structured_llm = llm.with_structured_output(TicketClassificationModel)
     result = structured_llm.invoke(ticket_classification)
     
     logger.info(f"Ticket classification: {result}")
     
     return {
-        **state,  
+        "subject":result.subject,
+        "body":result.body,
         "topic_tag": result.topic_tag,
         "sentiment": result.sentiment,
         "priority": result.priority,
@@ -81,12 +111,14 @@ def router(state: State):
 
 def last_node(state: State):
     logger.info("No suitable subgraph found for the given topic tag.")
+    topic = state.get("topic_tag", "")
+
+
     result = AnswerWithSources(
-        answer="This ticket has been classified but no RAG lookup was needed.",
+        answer = f"This ticket has been classified to {topic} and routed to the appropriate team",
         sources=[]
     )
     return {
-        
         "answer": result,
         "sources": []
     }
@@ -99,15 +131,15 @@ def build_graph():
     doc_rag = RAGSubgraph("data/vector_store/atlan_document_db").build()
     
 
-    parent.add_node("extract_ticket", extract_ticket)
+    # parent.add_node("extract_ticket", extract_ticket)
     parent.add_node("classify_ticket", classify_ticket)
 
     parent.add_node("developer", dev_rag)
     parent.add_node("documentation", doc_rag)
     parent.add_node("last_node", last_node)
 
-    parent.add_edge(START, "extract_ticket")
-    parent.add_edge("extract_ticket", "classify_ticket")
+    parent.add_edge(START, "classify_ticket")
+    # parent.add_edge("extract_ticket", "classify_ticket")
 
     # ✅ Router attached to classify_ticket
     parent.add_conditional_edges(
