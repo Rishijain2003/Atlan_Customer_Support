@@ -1,9 +1,9 @@
 import streamlit as st
 import json
 
-# -------------------------
+# --------
 # Load sample tickets
-# -------------------------
+
 SAMPLE_TICKETS_FILE = "sample_tickets.json"
 
 with open(SAMPLE_TICKETS_FILE, "r", encoding="utf-8") as f:

@@ -1,11 +1,10 @@
 import streamlit as st
 import json
 import os
-from parent_graph import run_graph  # Import your AI pipeline
+#from customer_support_agent import run_graph  
+from customer_support import CustomerSupportAgent  
 
-# -------------------------
-# Load sample tickets
-# -------------------------
+
 BASE_DIR = os.path.dirname(__file__)  # Current script directory
 
 SAMPLE_TICKETS_FILE = os.path.abspath(
@@ -21,44 +20,37 @@ else:
     print(f"File not found: {SAMPLE_TICKETS_FILE}. Initializing empty ticket list.")
     initial_tickets = []
 
-# -------------------------
-# Initialize session state
-# -------------------------
+
 if "tickets" not in st.session_state:
     st.session_state.tickets = initial_tickets.copy()
 
-# -------------------------
+
 # Page Config
-# -------------------------
 st.set_page_config(page_title="AI Helpdesk Demo", layout="wide")
 st.title("AI-Powered Helpdesk Demo")
 
-# -------------------------
+
 # Interactive AI Agent Section
-# -------------------------
 st.subheader("Interactive AI Agent")
 st.markdown("Enter a new ticket or query below to see the AI pipeline in action:")
 
-# -------------------------
+# Create a single agent instance (outside the form so it's reused)
+agent = CustomerSupportAgent()
 # Form for ticket input
-# -------------------------
 with st.form("ticket_form", clear_on_submit=True):
     query = st.text_area(
         "New Ticket / Query",
         placeholder="Type your ticket here..."
     )
 
-    submit_button = st.form_submit_button("Analyze Ticket")
+    submit_button = st.form_submit_button("Add ticket and Analyze")
 
     if submit_button and query.strip():
         with st.spinner("Processing your ticket..."):
-            # Call the AI pipeline
-            result = run_graph(query)
-
+            result = agent.run_graph(query)
             if "error" in result:
                 st.error(f"Error occurred: {result['error']}")
             else:
-                # Internal Analysis Metrics
                 st.write("### Internal Analysis (Support Team View)")
                 col1, col2, col3 = st.columns(3)
                 with col1:
@@ -82,7 +74,7 @@ with st.form("ticket_form", clear_on_submit=True):
 
                 # Add ticket to session state
                 new_ticket = {
-                    "id": result.get("id", f"TICKET-{len(st.session_state.tickets)+1}"),
+                    "id":  f"TICKET-{len(st.session_state.tickets)+246}",
                     "subject": result.get("subject", query[:50] + "..." if len(query) > 50 else query),
                     "body": result.get("body", query),
                     "topic_tag": result.get("topic_tag", ""),
@@ -94,9 +86,8 @@ with st.form("ticket_form", clear_on_submit=True):
     elif submit_button:
         st.warning("Please enter a query before analyzing.")
 
-# -------------------------
+
 # Dashboard Section
-# -------------------------
 st.subheader("Bulk Ticket Classification Dashboard")
 st.markdown(
     f"Displaying **{len(st.session_state.tickets)}** tickets. Processed tickets show AI-generated **Topic, Sentiment, and Priority**."
@@ -129,7 +120,7 @@ st.markdown(
 
 st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
 
-# Display tickets
+
 for t in st.session_state.tickets:
     topic = t.get('topic_tag', '')
     sentiment = t.get('sentiment', '')
