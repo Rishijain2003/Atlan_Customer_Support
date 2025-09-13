@@ -27,7 +27,7 @@ def crawl_pages(base_url):
     while to_visit:
         current_url = to_visit.pop()
         
-        # The URL is already normalized, so we just check and add
+      
         if current_url in visited:
             continue
         visited.add(current_url)
@@ -35,7 +35,7 @@ def crawl_pages(base_url):
         print("Visiting:", current_url)
         try:
             resp = requests.get(current_url, timeout=10)
-            resp.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
+            resp.raise_for_status() 
 
             if "text/html" not in resp.headers.get("Content-Type", ""):
                 continue
@@ -45,16 +45,16 @@ def crawl_pages(base_url):
                 href = link["href"]
                 full_url = urljoin(current_url, href)
                 
-                # Normalize the newly found URL before processing
+                
                 normalized_new_url = normalize_url(full_url)
 
                 parsed = urlparse(normalized_new_url)
                 if parsed.netloc == domain and normalized_new_url not in visited:
                     to_visit.append(normalized_new_url)
         except requests.exceptions.RequestException as e:
-            print(f"❌ Error fetching {current_url}: {e}")
+            print(f" Error fetching {current_url}: {e}")
         except Exception as e:
-            print(f"❌ An unexpected error occurred for {current_url}: {e}")
+            print(f" An unexpected error occurred for {current_url}: {e}")
             
     return list(visited)
 
@@ -70,14 +70,14 @@ def crawl_multiple(base_urls):
     return list(all_urls)
 
 if __name__ == "__main__":
-    # --- Example for crawling docs.atlan.com ---
+    
     print("--- Starting crawl for docs.atlan.com ---")
     documentation_urls = crawl_pages("https://docs.atlan.com/")
     with open("data/document_urls.json", "w") as f:
         json.dump(documentation_urls, f, indent=2)
     print(f"✅ Saved {len(documentation_urls)} unique URLs to data/document_urls.json")
 
-    # --- Example for crawling developer.atlan.com from multiple seeds ---
+   
     print("\n--- Starting crawl for developer.atlan.com ---")
     developer_seeds = [
         "https://developer.atlan.com/",

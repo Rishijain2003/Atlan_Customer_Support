@@ -6,9 +6,6 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 
-# -----------------
-# Logger setup
-# -----------------
 logger = logging.getLogger(__name__)
 
 BASE_DIR = "data/vector_store"
@@ -42,7 +39,7 @@ def build_vector_db(url_file: str, db_dir: str):
 if __name__ == "__main__":
     # Developer-related DB
     logger.info("📦 Building Developer Vector DB...")
-    build_vector_db("data/developer_urls.json", DEV_DB)
+    build_vector_db("data/development_urls.json", DEV_DB)
 
     # Document/FAQ-related DB
     logger.info("📦 Building Document Vector DB...")

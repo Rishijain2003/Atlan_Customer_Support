@@ -1,10 +1,5 @@
-import requests
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
 from pydantic import BaseModel, Field
 from typing import List, Literal
-from typing_extensions import Annotated, TypedDict
-
 class Page(BaseModel):
     url: str
     title: str

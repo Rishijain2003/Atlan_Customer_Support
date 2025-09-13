@@ -2,7 +2,6 @@ streamlit
 pandas
 numpy
 requests
-os
 glob2
 python-dotenv
 gradio
