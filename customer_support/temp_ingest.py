@@ -25,7 +25,7 @@ def build_vector_db(url_file: str, index_name: str):
     if index_name not in [i["name"] for i in pc.list_indexes()]:
         pc.create_index(
             name=index_name,
-            dimension=1536,  
+            dimension=1536,  # OpenAI embeddings size
             metric="cosine",
             spec=ServerlessSpec(cloud="aws", region=env)
         )
@@ -35,7 +35,7 @@ def build_vector_db(url_file: str, index_name: str):
     with open(url_file) as f:
         urls = json.load(f)
 
-    logger.info(f" Loading {len(urls)} URLs from {url_file} ...")
+    logger.info(f"🌐 Loading {len(urls)} URLs from {url_file} ...")
     loader = WebBaseLoader(urls)
     docs = loader.load()
 
@@ -43,10 +43,8 @@ def build_vector_db(url_file: str, index_name: str):
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks = splitter.split_documents(docs)
 
-    # Use the smaller embedding model
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-
-    # Push to Pinecone
+    # Create embeddings + push to Pinecone
+    embeddings = OpenAIEmbeddings()
     vectordb = PineconeVectorStore.from_documents(
         chunks,
         embeddings,
@@ -57,9 +55,8 @@ def build_vector_db(url_file: str, index_name: str):
 
 
 if __name__ == "__main__":
-    
-    logger.info("Building Developer Vector DB...")
-    build_vector_db("data/development_urls.json", "developmentdb")
+    logger.info("📦 Building Developer Vector DB...")
+    build_vector_db("data/temp.json", "tempdb")
 
-    logger.info("Building Document Vector DB...")
-    build_vector_db("data/document_urls.json", "documentdb")
+    # logger.info("📦 Building Document Vector DB...")
+    # build_vector_db("data/document_urls.json", "document-db")

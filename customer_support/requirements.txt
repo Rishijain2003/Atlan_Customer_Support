@@ -7,9 +7,9 @@ python-dotenv
 gradio
 langchain
 langchain-openai
-langchain-chroma
+langchain-pinecone
+pinecone-client
 matplotlib
 scikit-learn
-numpy
 plotly
 langgraph

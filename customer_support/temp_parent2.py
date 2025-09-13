@@ -2,7 +2,7 @@ import logging
 from langgraph.graph import StateGraph, START, END
 from langchain_openai import ChatOpenAI
 import os
-from rag import RAGSubgraph
+from temp_rag import RAGAgent
 from state import State
 from prompt import ticket_structure, classification_prompt
 from schema import Ticket, TicketClassification
@@ -77,9 +77,9 @@ def process_query(state: State):
 # ----------------
 def build_graph():
     """Build and compile the complete graph."""
-    # Build RAG subgraph
-    temp_rag = RAGSubgraph("data/vector_store/temp_db").build()
-    
+    # Build RAG agent
+    temp_rag = RAGAgent("tempdb").build()
+
     # Build parent graph
     parent = StateGraph(State)
     parent.add_node("process_query", process_query)
