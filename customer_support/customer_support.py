@@ -1,10 +1,8 @@
 import logging
 import os
 from dotenv import load_dotenv
-
 from langgraph.graph import StateGraph, START, END
 from langchain_openai import ChatOpenAI
-
 from rag_builder import RAGAgent
 from state import State
 from prompt import classifier_prompt
@@ -71,8 +69,8 @@ class CustomerSupportAgent:
     def build_graph(self):
         parent = StateGraph(State)
 
-        dev_rag = RAGAgent("data/vector_store/developer_db").build()
-        doc_rag = RAGAgent("data/vector_store/atlan_document_db").build()
+        dev_rag = RAGAgent("developmentdb").build()
+        doc_rag = RAGAgent("documentdb").build()
 
         parent.add_node("classify_ticket", self.classify_ticket)
         parent.add_node("developer", dev_rag)

@@ -3,8 +3,8 @@ from langgraph.graph import StateGraph, START, END
 from langchain_openai import ChatOpenAI
 from rag_builder import RAGAgent
 from state import State
-from prompt import ticket_structure, classification_prompt,classifier_prompt
-from schema import Ticket, TicketClassification, AnswerWithSources,TicketClassificationModel
+from prompt import classifier_prompt
+from schema import   AnswerWithSources,TicketClassificationModel
 
 
 

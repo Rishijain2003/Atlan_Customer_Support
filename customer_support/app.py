@@ -5,7 +5,7 @@ import os
 from customer_support import CustomerSupportAgent  
 
 
-BASE_DIR = os.path.dirname(__file__)  # Current script directory
+BASE_DIR = os.path.dirname(__file__)  
 
 SAMPLE_TICKETS_FILE = os.path.abspath(
     os.path.join(BASE_DIR, "..", "classifier", "sample_ticket_classified.json")

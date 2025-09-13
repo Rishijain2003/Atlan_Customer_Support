@@ -10,11 +10,6 @@ class AnswerWithSources(BaseModel):
     answer: str
     sources: List[str]
 
-class Ticket(BaseModel):
-    id: str = Field(..., description="Unique ticket id starting with TICKET- and a number")
-    subject: str = Field(..., description="Short subject line summarizing the issue")
-    body: str = Field(..., description="Full user query body as provided")
-
     
 class TicketClassificationModel(BaseModel):  
     """Classification fields only - no ticket content"""
