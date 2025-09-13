@@ -1,0 +1,16 @@
+streamlit
+pandas
+numpy
+requests
+os
+glob2
+python-dotenv
+gradio
+langchain
+langchain-openai
+langchain-chroma
+matplotlib
+scikit-learn
+numpy
+plotly
+langgraph
