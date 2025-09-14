@@ -70,7 +70,7 @@ class CustomerSupportAgent:
                 return route
 
         # Fallback
-        return "last_node"
+        return "AssignTeam"
 
    
     def AssignTeam(self, state: State):
@@ -94,7 +94,7 @@ class CustomerSupportAgent:
 
         parent.add_node("TicketClassifier", self.TicketClassifier)
         parent.add_node("rag", rag)
-        parent.add_node("last_node", self.AssignTeam)
+        parent.add_node("AssignTeam", self.AssignTeam)
 
         parent.add_edge(START, "TicketClassifier")
 
