@@ -44,14 +44,6 @@ class CustomerSupportAgent:
             "priority": result.priority,
         }
 
-    # def router(self, state: State):
-    #     q = state["topic_tag"]
-    #     if q in ["How-to", "Product", "Connector"]:
-    #         return "documentation"
-    #     elif q in ["API/SDK"]:
-    #         return "developer"
-    #     else:
-    #         return "last_node"
  
     def router(self, state: State):
         """
@@ -80,7 +72,7 @@ class CustomerSupportAgent:
         return "last_node"
 
    
-    def TicketRouter(self, state: State):
+    def AssignTeam(self, state: State):
         logger.info("No suitable subgraph found for the given topic tags.")
         topics = state.get("topic_tags", [])
 
@@ -96,15 +88,12 @@ class CustomerSupportAgent:
     def build_graph(self):
         parent = StateGraph(State)
 
-        # dev_rag = RAGAgent("developmentdb").build()
-        # doc_rag = RAGAgent("documentdb").build()
+
         rag = RAGAgent("atlandb").build()
 
         parent.add_node("TicketClassifier", self.TicketClassifier)
-        # parent.add_node("developer", dev_rag)
-        # parent.add_node("documentation", doc_rag)
         parent.add_node("rag", rag)
-        parent.add_node("TicketRouter", self.TicketRouter)
+        parent.add_node("last_node", self.AssignTeam)
 
         parent.add_edge(START, "TicketClassifier")
 
@@ -113,14 +102,13 @@ class CustomerSupportAgent:
             self.router,
             {
                 "rag": "rag",
-                "TicketRouter": "TicketRouter",
+                "AssignTeam": "AssignTeam",
             }
         )
 
-        # parent.add_edge("developer", END)
-        # parent.add_edge("documentation", END)
+
         parent.add_edge("rag", END)
-        parent.add_edge("TicketRouter", END)
+        parent.add_edge("AssignTeam", END)
 
         return parent.compile()
 

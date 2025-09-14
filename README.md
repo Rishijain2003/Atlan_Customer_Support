@@ -1,173 +1,183 @@
-# AI-Powered Customer Support Copilot
+# Major Design Decisions and Trade-offs for the AI Pipeline
 
 ## Overview
-This project is an AI-powered helpdesk system that classifies, routes, and answers customer support tickets using Retrieval-Augmented Generation (RAG) and LLMs. It leverages LangChain, Pinecone, and Streamlit for a modern, interactive support workflow.
-
-## Major Design Decisions & Trade-offs
-
-### 1. **Retrieval-Augmented Generation (RAG) Pipeline**
-- **Why RAG?**
-  - RAG combines LLMs with a vector database to ground answers in real documentation, reducing hallucinations and improving factuality.
-- **Trade-off:**
-  - Requires maintaining up-to-date vector stores and handling retrieval latency, but provides more reliable, source-cited answers.
-
-### 2. **Ticket Classification & Routing**
-- **LLM-based Classification:**
-  - Uses a structured prompt and Pydantic models to extract ticket subject, topic, sentiment, and priority.
-  - Ensures consistent, explainable routing to the right subgraph (developer/docs/other).
-- **Trade-off:**
-  - LLMs may misclassify edge cases; prompt engineering and model selection are critical.
-
-### 3. **Graph-based Workflow (LangGraph)**
-- **Why Graphs?**
-  - Modular, extensible pipeline: easy to add new nodes (e.g., escalation, feedback).
-  - Conditional routing based on classification output.
-- **Trade-off:**
-  - More complex than a linear pipeline, but enables robust, production-grade flows.
-
-### 4. **Environment & Secrets Management**
-- **Streamlit Secrets:**
-  - API keys and environment variables are managed via `st.secrets` for local/dev security.
-- **Trade-off:**
-  - Requires Streamlit for all runs; for pure backend, would use `.env` or a secrets manager.
-
-### 5. **Bulk & Interactive Modes**
-- **Bulk Classification:**
-  - Supports batch processing of tickets for dashboarding and analytics.
-- **Interactive Agent:**
-  - Real-time ticket submission and response for demo and live support.
-
-## Setup & Local Development
-
-### 1. **Clone the Repository**
-```sh
-git clone https://github.com/Rishijain2003/Atlan_Customer_Support.git
-cd Atlan_Customer_Support
-```
-
-### 2. **Create and Activate Virtual Environment**
-```sh
-python -m venv atlan_virtual_env
-atlan_virtual_env\Scripts\activate  # On Windows
-# Or
-source atlan_virtual_env/bin/activate  # On Mac/Linux
-```
-
-### 3. **Install Dependencies**
-```sh
-pip install -r customer_support/requirements.txt
-```
-
-### 4. **Set Up API Keys**
-- Add your OpenAI and Pinecone API keys to `.streamlit/secrets.toml` or to .env and comment out the os.getenv one and comment the st.secret line:
-
-```toml
-[general]
-Openai_api_key = "YOUR_OPENAI_KEY"
-pinecone_api_key = "YOUR_PINECONE_KEY"
-PINECONE_ENV = "YOUR_PINECONE_ENV"
-```
-
-### 5. **Crawl and Ingest Documentation**
-- Crawl documentation and developer sites:
-```sh
-cd customer_support
-python crawler.py
-```
-- Build vector databases:
-```sh
-python ingest.py
-```
-
-### 6. **Run the Streamlit App**
-```sh
-streamlit run customer_support/app.py
-```
-
-- The app will open in your browser. You can submit tickets and view the AI's analysis and responses.
-
-### 7. **Bulk Ticket Classification (Optional)**
-- To classify tickets in bulk:
-```sh
-python -m classifier.classifier
-```
-
-## File Structure
-```
-customer_support/
-    app.py                # Streamlit UI
-    crawler.py            # Web crawler for docs
-    ingest.py             # Vector DB builder
-    rag_builder.py        # RAG pipeline
-    customer_support_agent.py # Main agent logic
-    ...
-classifier/
-    classifier.py         # Bulk ticket classifier
-    ...
-```
-
-## Notes
-- **Architecture diagram:** 
-
-
-
-![Architecture Diagram](customer_support/Customer_support.jpg)
-
-
-
-
-
-- For production, consider using a secrets manager and robust error handling.
-- The system is modular—add new topic tags, subgraphs, or LLM models as needed.
+The AI pipeline is designed to classify customer support tickets and route them to the appropriate team or generate relevant answers using a Retrieval-Augmented Generation (RAG) approach. Below, we outline the major design decisions and trade-offs made during the development of this pipeline.
 
 ---
 
-For questions or contributions, open an issue or pull request on GitHub.
-## Working, Approach, and Model/Tool Choices
+## Design Decisions
 
-### Application & UI
-- The helpdesk UI is built entirely with **Streamlit** for rapid prototyping, interactivity, and ease of deployment.
-- The application is deployed on **Streamlit Community Cloud** for public access and demonstration.
-- **Deployed link:** [https://atlan-customer-support-copilot.streamlit.app/](https://atlan-customer-support-copilot.streamlit.app/)
+### 1. **Classifier Node**
+The pipeline begins with a classifier node that processes incoming tickets. The classifier uses a large language model (LLM) to analyze the ticket content and classify it into one or more topic tags. 
 
-### AI Logic: Classification & RAG Pipelines
-- **Classification Pipeline:**
-  - Uses OpenAI's LLMs (see below) with structured prompts and Pydantic models to extract ticket subject, topic, sentiment, and priority.
-  - Ensures robust, explainable, and consistent ticket routing.
-- **RAG Pipeline:**
-  - Combines LLMs with a Pinecone vector database to ground answers in real documentation, reducing hallucinations and providing source-cited responses.
-  - The pipeline is implemented using LangChain and LangGraph for modular, graph-based orchestration.
+#### Key Features:
+- **Input:** The classifier takes tickets from `sample_tickets.json`.
+- **Prompt Design:** The LLM is provided with a detailed prompt that specifies how to handle various scenarios. This ensures that the classification is robust and context-aware.
+- **Multiple Topic Tags:**
+  - The problem statement did not specify whether a ticket should belong to one or multiple topic tags.
+  - **Decision:** We opted for multiple topic tags as it made more sense in real-world scenarios where a ticket could span multiple topics. For example, a ticket might involve both "API/SDK" and "Product" issues.
 
-### Model Choices & Rationale
-- **LLM Model:**
-  - Chosen model: **OpenAI GPT-4o-mini** (or similar OpenAI models).
-  - **Why OpenAI?**
-    - Industry-leading performance for both classification and generative tasks.
-    - Excellent support for structured output and prompt engineering.
-    - Reliable, scalable, and easy to integrate with LangChain.
-- **Embedding Model:**
-  - Chosen model: **OpenAI text-embedding-3-small**.
-  - **Why this embedding?**
-    - High-quality, dense vector representations for semantic search and retrieval.
-    - Embedding dimension: **1536** (chosen for compatibility and performance with Pinecone and OpenAI's latest models).
-    - Balances speed, cost, and retrieval accuracy for production-scale RAG systems.
-
-### Crawler, Ingestion, and RAG Flow
-- **Crawling:**
-  - The system starts by crawling four key documentation and developer URLs:
-    - `https://developer.atlan.com/`
-    - `https://developer.atlan.com/getting-started/`
-    - `https://developer.atlan.com/concepts/`
-    - `https://docs.atlan.com/`
-  - The crawler recursively collects all reachable URLs from these seeds, normalizes them, and stores them in a set to ensure uniqueness (no duplicate URLs).
-  - The final set of URLs is saved to a JSON file for downstream processing.
-- **Ingestion:**
-  - Using LangChain's `WebBaseLoader`, all crawled URLs are loaded and their content is split into manageable chunks.
-  - Each chunk is embedded using the OpenAI text-embedding-3-small model (1536 dimensions).
-  - The resulting embeddings are stored in a **Pinecone** cloud vector database for fast, scalable retrieval.
-- **RAG Execution:**
-  - When a user submits a question via the UI, it is passed to the graph-based pipeline.
-  - The pipeline retrieves relevant context from Pinecone, then generates a source-cited answer using the LLM.
-  - The response is returned to the UI, along with internal classification and routing details.
+#### Trade-offs:
+- **Complexity vs. Simplicity:** Allowing multiple topic tags increases the complexity of the classification logic but provides a more nuanced understanding of the ticket.
+- **Accuracy vs. Speed:** Classifying multiple tags may slightly increase processing time but ensures higher accuracy in routing.
+- **LLM Limitations:** While the prompt is highly descriptive, the LLM might misclassify edge cases or hallucinate, especially in ambiguous scenarios. This trade-off was accepted to leverage the LLM's ability to handle diverse and complex inputs.
 
 ---
+
+### 2. **Routing Logic**
+Once the topics are classified, the ticket is routed in real-time to either the RAG node or the `TicketRouter` node. The `TicketRouter` node ensures that the ticket is directed to the appropriate team based on the classified topics.
+
+#### Key Features:
+- **Dynamic Routing:** The routing logic dynamically determines the next step based on the classified topics.
+- **Fallback Mechanism:** If no suitable subgraph is found, the ticket is routed to a default node.
+
+#### Trade-offs:
+- **Flexibility vs. Predictability:** Dynamic routing adds flexibility but requires robust error handling to manage edge cases.
+
+---
+
+### 3. **RAG Node**
+The RAG node is responsible for generating answers using a Retrieval-Augmented Generation approach. This involves retrieving relevant documents and generating context-aware responses.
+
+#### Key Features:
+- **Model Choice:**
+  - **OpenAI GPT-4-o-mini:** This model was chosen for its balance between performance and cost. It provides high-quality responses while being computationally efficient.
+- **Embeddings Model:**
+  - **OpenAI text-embedding-3-small:** This model was selected for generating embeddings due to its smaller size and efficiency, making it suitable for real-time applications.
+- **Database:**
+  - **Pinecone:** Pinecone was chosen as the vector database for its cloud-based architecture, scalability, and ease of integration.
+- **Chunking Method:**
+  - **Text Splitting:** Documents are split into chunks using the Recursive Character Text Splitter. This method ensures that the chunks are of manageable size (e.g., 1000 characters with 200-character overlap) for efficient retrieval and processing.
+
+#### Trade-offs:
+- **Model Performance vs. Cost:** While GPT-4-o-mini is not the most powerful model, it offers a good trade-off between performance and cost.
+- **Embedding Size vs. Accuracy:** The smaller embedding model sacrifices some accuracy for faster processing and lower resource usage.
+- **Database Choice:** Pinecone’s cloud-based nature ensures scalability but introduces dependency on external infrastructure.
+- **Chunking:** Smaller chunks improve retrieval accuracy but increase the number of queries to the database.
+
+---
+
+## Conclusion
+The design of this AI pipeline balances accuracy, efficiency, and scalability. Each decision, from allowing multiple topic tags to choosing specific models and databases, was made to ensure that the system meets real-world requirements while remaining cost-effective and robust. The trade-offs highlight the careful consideration given to each component to optimize the overall performance of the pipeline.
+
+---
+
+## System Architecture
+
+### Overview
+Below is an architecture diagram illustrating how the components of the system interact. The diagram provides a high-level view of the flow from the user interface to the backend components.
+
+**[Insert Architecture Diagram Here]**
+
+### Component Interaction
+
+1. **Streamlit UI:**
+   - The user interacts with the system through a Streamlit-based user interface.
+   - The user inputs a question or ticket, which is then passed to the backend for processing.
+
+2. **Graph Execution:**
+   - The Streamlit UI invokes the graph, which orchestrates the flow of the pipeline.
+   - The graph begins execution at the first node, `TicketClassifier`.
+
+3. **TicketClassifier Node:**
+   - This node classifies the ticket into one or more topic tags, sentiment, and priority using an LLM.
+   - The classification results determine the next step in the pipeline.
+
+4. **Routing Logic:**
+   - Based on the topic tags, the ticket is routed to either the `RAG` node or the `TicketRouter` node.
+
+5. **RAG Node:**
+   - If the ticket is routed to the `RAG` node, the system retrieves relevant documents and generates an answer using the RAG approach.
+   - The generated answer is displayed on the Streamlit UI.
+
+6. **TicketRouter Node:**
+   - If the ticket is routed to the `TicketRouter` node, the system generates a response indicating that the ticket has been classified and routed to the appropriate team.
+   - For example: "This ticket has been classified as a 'Connector' issue and routed to the appropriate team."
+
+7. **Streamlit UI (Output):**
+   - The final answer, whether generated by the `RAG` node or the `TicketRouter` node, is displayed to the user on the Streamlit UI.
+
+---
+
+## Setting Up the Environment and Running the Project Locally
+
+### Steps to Run the Project Locally
+
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/Rishijain2003/Atlan_Customer_Support.git
+   cd Atlan_Customer_Support
+   ```
+
+2. **Create and Activate a Virtual Environment:**
+   - On Windows:
+     ```bash
+     python -m venv atlan_virtual_env
+     .\atlan_virtual_env\Scripts\activate
+     ```
+   - On macOS/Linux:
+     ```bash
+     python3 -m venv atlan_virtual_env
+     source atlan_virtual_env/bin/activate
+     ```
+
+3. **Install Requirements:**
+   ```bash
+   pip install -r customer_support/requirements.txt
+   ```
+
+4. **Set Up Environment Variables:**
+   - Create a `.env` file in the project root directory.
+   - Add the required environment variables (e.g., `Openai_api_key`, `pinecone_api_key`, `PINECONE_ENV`).
+
+5. **Run the Application:**
+   - From the project root directory:
+     ```bash
+     streamlit run customer_support/app.py
+     ```
+   - Alternatively, navigate to the `customer_support` directory and run:
+     ```bash
+     cd customer_support
+     streamlit run app.py
+     ```
+
+6. **Run Bulk Ticket Classification:**
+   - From the project root directory:
+     ```bash
+     python -m classifier.classifier
+     ```
+
+---
+
+### Steps I took to make the vector database and then run the application 
+
+1. **Bulk Ticket Classification:**
+   - Follow the steps above to set up the environment.
+   - Run the bulk ticket classifier:
+     ```bash
+     python -m classifier.classifier
+     ```
+
+2. **Run the Web Crawler:**
+   - Execute the crawler script to collect URLs:
+     ```bash
+     python customer_support/crawler.py
+     ```
+
+3. **Validate URLs:**
+   - Validate the collected URLs:
+     ```bash
+     python customer_support/validate_urls.py
+     ```
+
+4. **Ingest Vector Database:**
+   - Build the vector database:
+     ```bash
+     python customer_support/ingest.py
+     ```
+
+5. **Run the Streamlit Application:**
+   - Finally, launch the Streamlit application:
+     ```bash
+     streamlit run customer_support/app.py
+     ```

@@ -13,3 +13,5 @@ matplotlib
 scikit-learn
 plotly
 langgraph
+ragas
+datasets
