@@ -90,7 +90,7 @@ class WebCrawler:
 if __name__ == "__main__":
     crawler = WebCrawler()
 
-    # Seed URLs
+
     seed_urls = [
         "https://docs.atlan.com/",
         "https://developer.atlan.com/",

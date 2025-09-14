@@ -65,10 +65,6 @@ def build_vector_db(url_file: str, index_name: str):
 
 if __name__ == "__main__":
     
-    # logger.info("Building Developer Vector DB...")
-    # build_vector_db("data/development_urls.json", "developmentdb")
 
-    # logger.info("Building Document Vector DB...")
-    # build_vector_db("data/document_urls.json", "documentdb")
     logger.info("Building Atlan Vector DB...")
     build_vector_db("data/valid_urls.json", "atlandb")

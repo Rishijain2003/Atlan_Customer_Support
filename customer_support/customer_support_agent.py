@@ -58,8 +58,9 @@ class CustomerSupportAgent:
         route_mapping = {
             "How-to": "rag",
             "Product": "rag",
-            "Connector": "rag",
+            "SSO": "rag",
             "API/SDK": "rag",
+            "Best practices": "rag",     
         }
 
         # Check each topic in order
