@@ -108,6 +108,15 @@ classifier/
 
 ## Notes
 - **Architecture diagram:** 
+
+
+
+![Architecture Diagram](customer_support/Customer_support.jpg)
+
+
+
+
+
 - For production, consider using a secrets manager and robust error handling.
 - The system is modular—add new topic tags, subgraphs, or LLM models as needed.
 
