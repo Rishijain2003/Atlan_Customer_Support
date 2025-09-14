@@ -114,3 +114,51 @@ classifier/
 ---
 
 For questions or contributions, open an issue or pull request on GitHub.
+## Working, Approach, and Model/Tool Choices
+
+### Application & UI
+- The helpdesk UI is built entirely with **Streamlit** for rapid prototyping, interactivity, and ease of deployment.
+- The application is deployed on **Streamlit Community Cloud** for public access and demonstration.
+- **Deployed link:** [https://atlan-customer-support-copilot.streamlit.app/](https://atlan-customer-support-copilot.streamlit.app/)
+
+### AI Logic: Classification & RAG Pipelines
+- **Classification Pipeline:**
+  - Uses OpenAI's LLMs (see below) with structured prompts and Pydantic models to extract ticket subject, topic, sentiment, and priority.
+  - Ensures robust, explainable, and consistent ticket routing.
+- **RAG Pipeline:**
+  - Combines LLMs with a Pinecone vector database to ground answers in real documentation, reducing hallucinations and providing source-cited responses.
+  - The pipeline is implemented using LangChain and LangGraph for modular, graph-based orchestration.
+
+### Model Choices & Rationale
+- **LLM Model:**
+  - Chosen model: **OpenAI GPT-4o-mini** (or similar OpenAI models).
+  - **Why OpenAI?**
+    - Industry-leading performance for both classification and generative tasks.
+    - Excellent support for structured output and prompt engineering.
+    - Reliable, scalable, and easy to integrate with LangChain.
+- **Embedding Model:**
+  - Chosen model: **OpenAI text-embedding-3-small**.
+  - **Why this embedding?**
+    - High-quality, dense vector representations for semantic search and retrieval.
+    - Embedding dimension: **1536** (chosen for compatibility and performance with Pinecone and OpenAI's latest models).
+    - Balances speed, cost, and retrieval accuracy for production-scale RAG systems.
+
+### Crawler, Ingestion, and RAG Flow
+- **Crawling:**
+  - The system starts by crawling four key documentation and developer URLs:
+    - `https://developer.atlan.com/`
+    - `https://developer.atlan.com/getting-started/`
+    - `https://developer.atlan.com/concepts/`
+    - `https://docs.atlan.com/`
+  - The crawler recursively collects all reachable URLs from these seeds, normalizes them, and stores them in a set to ensure uniqueness (no duplicate URLs).
+  - The final set of URLs is saved to a JSON file for downstream processing.
+- **Ingestion:**
+  - Using LangChain's `WebBaseLoader`, all crawled URLs are loaded and their content is split into manageable chunks.
+  - Each chunk is embedded using the OpenAI text-embedding-3-small model (1536 dimensions).
+  - The resulting embeddings are stored in a **Pinecone** cloud vector database for fast, scalable retrieval.
+- **RAG Execution:**
+  - When a user submits a question via the UI, it is passed to the graph-based pipeline.
+  - The pipeline retrieves relevant context from Pinecone, then generates a source-cited answer using the LLM.
+  - The response is returned to the UI, along with internal classification and routing details.
+
+---
