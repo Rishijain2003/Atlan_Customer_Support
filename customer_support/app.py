@@ -4,15 +4,15 @@ import os
 #from customer_support_agent import run_graph  
 from customer_support_agent import CustomerSupportAgent
 
-
 BASE_DIR = os.path.dirname(__file__)  
 
 SAMPLE_TICKETS_FILE = os.path.abspath(
-    os.path.join(BASE_DIR, "..", "classifier", "sample_ticket_classified.json")
+    os.path.join(BASE_DIR, "..", "classifier", "sample_ticket_c.json")
 )
 
 print("Looking for file at:", SAMPLE_TICKETS_FILE)
 
+# Load existing tickets or initialize empty list
 if os.path.exists(SAMPLE_TICKETS_FILE):
     with open(SAMPLE_TICKETS_FILE, "r", encoding="utf-8") as f:
         initial_tickets = json.load(f)
@@ -20,15 +20,12 @@ else:
     print(f"File not found: {SAMPLE_TICKETS_FILE}. Initializing empty ticket list.")
     initial_tickets = []
 
-
 if "tickets" not in st.session_state:
     st.session_state.tickets = initial_tickets.copy()
-
 
 # Page Config
 st.set_page_config(page_title="AI Helpdesk Demo", layout="wide")
 st.title("AI-Powered Helpdesk Demo")
-
 
 # Interactive AI Agent Section
 st.subheader("Interactive AI Agent")
@@ -36,6 +33,7 @@ st.markdown("Enter a new ticket or query below to see the AI pipeline in action:
 
 # Create a single agent instance (outside the form so it's reused)
 agent = CustomerSupportAgent()
+
 # Form for ticket input
 with st.form("ticket_form", clear_on_submit=True):
     query = st.text_area(
@@ -51,10 +49,11 @@ with st.form("ticket_form", clear_on_submit=True):
             if "error" in result:
                 st.error(f"Error occurred: {result['error']}")
             else:
+                # Internal Analysis (Support Team View)
                 st.write("### Internal Analysis (Support Team View)")
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Topic", result.get("topic_tag", "N/A"))
+                    st.metric("Topic", ", ".join(result.get("topic_tag", [])) if result.get("topic_tag") else "N/A")
                 with col2:
                     st.metric("Sentiment", result.get("sentiment", "N/A"))
                 with col3:
@@ -77,17 +76,14 @@ with st.form("ticket_form", clear_on_submit=True):
                     "id":  f"TICKET-{len(st.session_state.tickets)+245}",
                     "subject": result.get("subject", query[:50] + "..." if len(query) > 50 else query),
                     "body": result.get("body", query),
-                    "topic_tag": result.get("topic_tag", ""),
+                    "topic_tag": result.get("topic_tag", []),
                     "sentiment": result.get("sentiment", ""),
                     "priority": result.get("priority", "")
                 }
-                # st.session_state.tickets.insert(0, new_ticket)
                 st.session_state.tickets.append(new_ticket)
-
                 st.success("Ticket processed and added to dashboard!")
     elif submit_button:
         st.warning("Please enter a query before analyzing.")
-
 
 # Dashboard Section
 st.subheader("Bulk Ticket Classification Dashboard")
@@ -122,22 +118,26 @@ st.markdown(
 
 st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
 
-
 for t in reversed(st.session_state.tickets):
-    topic = t.get('topic_tag', '')
+    topics = t.get('topic_tag', [])
     sentiment = t.get('sentiment', '')
     priority = t.get('priority', '')
 
     with st.expander(f"{t['id']} — {t['subject']}"):
         st.write(f"**Body:** {t['body']}")
-        if topic:
-            st.markdown(f'**Topic:** <span class="ai-generated">{topic}</span>', unsafe_allow_html=True)
+
+        # Display multiple topics
+        if topics:
+            topics_display = ", ".join(topics) if isinstance(topics, list) else str(topics)
+            st.markdown(f'**Topic:** <span class="ai-generated">{topics_display}</span>', unsafe_allow_html=True)
         else:
             st.markdown('**Topic:** <span class="placeholder">(AI-generated)</span>', unsafe_allow_html=True)
+
         if sentiment:
             st.markdown(f'**Sentiment:** <span class="ai-generated">{sentiment}</span>', unsafe_allow_html=True)
         else:
             st.markdown('**Sentiment:** <span class="placeholder">(AI-generated)</span>', unsafe_allow_html=True)
+
         if priority:
             st.markdown(f'**Priority:** <span class="ai-generated">{priority}</span>', unsafe_allow_html=True)
         else:

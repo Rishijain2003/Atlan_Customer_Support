@@ -1,4 +1,3 @@
-# crawler.py
 import json
 from urllib.parse import urlparse, urljoin
 import requests
@@ -104,11 +103,7 @@ if __name__ == "__main__":
 
     print(f"\nTotal collected URLs (before validation): {len(all_urls)}")
 
-   
 
-    # Ensure output directory exists
-    # output_file = os.path.join("customer_support", "data", "all_urls.json")
-    # os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     # Save only valid URLs
     with open("data/all_urls.json", "w") as f:
