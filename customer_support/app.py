@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import os
 #from customer_support_agent import run_graph  
-from customer_support import CustomerSupportAgent  
+from customer_support_agent import CustomerSupportAgent
 
 
 BASE_DIR = os.path.dirname(__file__)  
