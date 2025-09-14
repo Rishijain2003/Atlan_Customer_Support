@@ -17,10 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 load_dotenv()
-# os.environ['OPENAI_API_KEY'] = os.getenv('Openai_api_key')
-os.environ["OPENAI_API_KEY"] = st.secrets["Openai_api_key"]
-os.environ["PINECONE_API_KEY"] = st.secrets["pinecone_api_key"]
-os.environ["PINECONE_ENV"] = st.secrets["PINECONE_ENV"]
+os.environ['OPENAI_API_KEY'] = os.getenv('Openai_api_key')
+# os.environ["OPENAI_API_KEY"] = st.secrets["Openai_api_key"]
+os.environ["PINECONE_API_KEY"] = os.getenv("pinecone_api_key")
+os.environ["PINECONE_ENV"] = os.getenv("PINECONE_ENV")
+# os.environ["OPENAI_API_KEY"] = st.secrets["Openai_api_key"]
+# os.environ["PINECONE_API_KEY"] = st.secrets["pinecone_api_key"]
+# os.environ["PINECONE_ENV"] = st.secrets["PINECONE_ENV"]
 
 
 class RAGAgent:

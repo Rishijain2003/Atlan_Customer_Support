@@ -16,8 +16,7 @@ Context:
 """
 
 classifier_prompt = """
-You are an AI assistant that converts user questions into structured support tickets
-and classifies them for the Atlan support system.
+You are an Customer Support Agent that converts user questions into structured support tickets nd classifies them for the Atlan support system.
 
 Input question: {question}
 

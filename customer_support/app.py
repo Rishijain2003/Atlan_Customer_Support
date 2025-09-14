@@ -74,14 +74,16 @@ with st.form("ticket_form", clear_on_submit=True):
 
                 # Add ticket to session state
                 new_ticket = {
-                    "id":  f"TICKET-{len(st.session_state.tickets)+246}",
+                    "id":  f"TICKET-{len(st.session_state.tickets)+245}",
                     "subject": result.get("subject", query[:50] + "..." if len(query) > 50 else query),
                     "body": result.get("body", query),
                     "topic_tag": result.get("topic_tag", ""),
                     "sentiment": result.get("sentiment", ""),
                     "priority": result.get("priority", "")
                 }
-                st.session_state.tickets.insert(0, new_ticket)
+                # st.session_state.tickets.insert(0, new_ticket)
+                st.session_state.tickets.append(new_ticket)
+
                 st.success("Ticket processed and added to dashboard!")
     elif submit_button:
         st.warning("Please enter a query before analyzing.")
@@ -121,7 +123,7 @@ st.markdown(
 st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
 
 
-for t in st.session_state.tickets:
+for t in reversed(st.session_state.tickets):
     topic = t.get('topic_tag', '')
     sentiment = t.get('sentiment', '')
     priority = t.get('priority', '')
