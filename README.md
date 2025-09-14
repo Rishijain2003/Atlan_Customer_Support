@@ -253,3 +253,11 @@ The following metrics were used during the evaluation:
 Below is an example of the terminal output from the Ragas evaluation:
 
 ![Ragas Evaluation Terminal Result](customer_support/Ragas_evaluation_terminal_result.jpg)
+
+
+## Contact Information
+
+For questions, feedback, or any doubts:
+
+**Email:** rishi.jain0920@gmail.com  
+**Phone:** +91 7985856847
