@@ -64,7 +64,7 @@ def crawl_multiple(base_urls):
     """
     all_urls = set()
     for base in base_urls:
-        print(f"\n🌐 Crawling from base: {base}")
+        print(f"\n Crawling from base: {base}")
         urls = crawl_pages(base)
         all_urls.update(urls)
     return list(all_urls)
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     documentation_urls = crawl_pages("https://docs.atlan.com/")
     with open("data/document_urls.json", "w") as f:
         json.dump(documentation_urls, f, indent=2)
-    print(f"✅ Saved {len(documentation_urls)} unique URLs to data/document_urls.json")
+    print(f" Saved {len(documentation_urls)} unique URLs to data/document_urls.json")
 
    
     print("\n--- Starting crawl for developer.atlan.com ---")
@@ -87,4 +87,4 @@ if __name__ == "__main__":
     developer_urls = crawl_multiple(developer_seeds)
     with open("data/development_urls.json", "w") as f:
         json.dump(developer_urls, f, indent=2)
-    print(f"✅ Saved {len(developer_urls)} unique URLs to data/development_urls.json")
+    print(f" Saved {len(developer_urls)} unique URLs to data/development_urls.json")
