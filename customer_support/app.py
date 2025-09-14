@@ -24,7 +24,7 @@ if "tickets" not in st.session_state:
 
 # Page Config
 st.set_page_config(page_title="AI Helpdesk Demo", layout="wide")
-st.title("AI-Powered Helpdesk Demo")
+st.title("Atlan Customer Support Agent dummy helpdesk")
 
 # Interactive AI Agent Section
 st.subheader("Interactive AI Agent")
@@ -48,8 +48,8 @@ with st.form("ticket_form", clear_on_submit=True):
             if "error" in result:
                 st.error(f"Error occurred: {result['error']}")
             else:
-                # Internal Analysis (Support Team View)
-                st.write("### Internal Analysis (Support Team View)")
+                
+                st.write("Internal Analysis")
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric("Topic", ", ".join(result.get("topic_tags", [])) if result.get("topic_tags") else "N/A")
@@ -58,8 +58,7 @@ with st.form("ticket_form", clear_on_submit=True):
                 with col3:
                     st.metric("Priority", result.get("priority", "N/A"))
 
-                # Customer View
-                st.write("### Final Response (Customer View)")
+                st.write(" Final Response")
                 if "answer" in result and result["answer"]:
                     st.write("**AI Response:**")
                     st.write(result["answer"].answer)

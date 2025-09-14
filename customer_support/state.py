@@ -9,6 +9,6 @@ class State(TypedDict):
     id: str               
     subject: str          
     body: str             
-    topic_tags: List[str]        # One of the controlled vocabulary
-    sentiment: str        # Frustrated | Curious | Angry | Neutral
-    priority: str         # P0 | P1 | P2
+    topic_tags: List[str]        
+    sentiment: str        
+    priority: str        

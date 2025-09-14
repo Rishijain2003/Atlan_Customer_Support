@@ -23,7 +23,6 @@ class WebCrawler:
             if "text/html" not in resp.headers.get("Content-Type", ""):
                 return None
 
-            # ✅ Only check the first 10 KB for error-like signatures
             snippet = resp.text[:10000].lower()
             error_signatures = [
                 "404 - not found",

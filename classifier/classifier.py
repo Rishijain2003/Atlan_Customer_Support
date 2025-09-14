@@ -58,7 +58,7 @@ def classify_tickets(input_file, output_file):
         if isinstance(result_dict["topic_tags"], str):
             result_dict["topic_tags"] = [result_dict["topic_tags"]]
 
-        print("******************************************************************************")
+
         print(f"Structured Response: {result_dict}")
 
         results.append({
@@ -68,7 +68,7 @@ def classify_tickets(input_file, output_file):
             **result_dict
         })
 
-    # Save results to output JSON
+ 
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
 

@@ -47,7 +47,7 @@ class RAGAgent:
     #Retrieval 
     def retrieve(self, state: State):
         retrieved_docs = self.vector_store.similarity_search(state["question"])
-        logger.info("*****************************************************************")
+
         logger.info(f"Retrieved {len(retrieved_docs)} documents for the query.")
         return {"context": retrieved_docs}
 
