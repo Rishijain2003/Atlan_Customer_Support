@@ -1,7 +1,6 @@
 import streamlit as st
 import json
 import os
-#from customer_support_agent import run_graph  
 from customer_support_agent import CustomerSupportAgent
 
 BASE_DIR = os.path.dirname(__file__)  
@@ -53,7 +52,7 @@ with st.form("ticket_form", clear_on_submit=True):
                 st.write("### Internal Analysis (Support Team View)")
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Topic", ", ".join(result.get("topic_tag", [])) if result.get("topic_tag") else "N/A")
+                    st.metric("Topic", ", ".join(result.get("topic_tags", [])) if result.get("topic_tags") else "N/A")
                 with col2:
                     st.metric("Sentiment", result.get("sentiment", "N/A"))
                 with col3:
@@ -76,7 +75,7 @@ with st.form("ticket_form", clear_on_submit=True):
                     "id":  f"TICKET-{len(st.session_state.tickets)+245}",
                     "subject": result.get("subject", query[:50] + "..." if len(query) > 50 else query),
                     "body": result.get("body", query),
-                    "topic_tag": result.get("topic_tag", []),
+                    "topic_tags": result.get("topic_tags", []),
                     "sentiment": result.get("sentiment", ""),
                     "priority": result.get("priority", "")
                 }
@@ -119,7 +118,7 @@ st.markdown(
 st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
 
 for t in reversed(st.session_state.tickets):
-    topics = t.get('topic_tag', [])
+    topics = t.get('topic_tags', [])
     sentiment = t.get('sentiment', '')
     priority = t.get('priority', '')
 

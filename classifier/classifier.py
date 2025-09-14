@@ -13,7 +13,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("Openai_api_key")
 # Pydantic Model supporting multiple topic tags
 class TicketClassification(BaseModel):
     """Classification fields only - no ticket content"""
-    topic_tag: List[Literal[
+    topic_tags: List[Literal[
         "How-to",
         "Product",
         "Connector",
@@ -54,9 +54,9 @@ def classify_tickets(input_file, output_file):
         result = structured_llm.invoke(ticket_classification_prompt)
         result_dict = result.model_dump()
 
-        # Ensure topic_tag is always a list
-        if isinstance(result_dict["topic_tag"], str):
-            result_dict["topic_tag"] = [result_dict["topic_tag"]]
+        # Ensure topic_tags is always a list
+        if isinstance(result_dict["topic_tags"], str):
+            result_dict["topic_tags"] = [result_dict["topic_tags"]]
 
         print("******************************************************************************")
         print(f"Structured Response: {result_dict}")

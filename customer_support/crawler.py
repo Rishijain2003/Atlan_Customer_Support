@@ -1,90 +1,112 @@
-# crawler.py
 import json
 from urllib.parse import urlparse, urljoin
 import requests
 from bs4 import BeautifulSoup
+import os
 
-def normalize_url(url):
-    """
-    Normalizes a URL by removing its fragment and any trailing slashes.
-    """
-    # Remove the fragment part (anything after '#')
-    url = url.split('#')[0]
-    # Remove any trailing slashes
-    if url.endswith('/'):
-        url = url.rstrip('/')
-    return url
 
-def crawl_pages(base_url):
-    """
-    Crawls all pages within a single base URL's domain.
-    """
-    # Normalize the starting URL itself
-    start_url = normalize_url(base_url)
-    visited, to_visit = set(), [start_url]
-    domain = urlparse(start_url).netloc
+class WebCrawler:
+    def __init__(self):
+        self.visited = set()
 
-    while to_visit:
-        current_url = to_visit.pop()
-        
-      
-        if current_url in visited:
-            continue
-        visited.add(current_url)
+    def normalize_url(self, url):
+        """Remove fragments and trailing slashes."""
+        url = url.split('#')[0]
+        return url.rstrip('/') if url.endswith('/') else url
 
-        print("Visiting:", current_url)
+    def fetch_page(self, url):
+        """Try to fetch a page, return response or None if fails or invalid content."""
         try:
-            resp = requests.get(current_url, timeout=10)
-            resp.raise_for_status() 
+            resp = requests.get(url, timeout=10)
+            resp.raise_for_status()
 
             if "text/html" not in resp.headers.get("Content-Type", ""):
+                return None
+
+            # ✅ Only check the first 10 KB for error-like signatures
+            snippet = resp.text[:10000].lower()
+            error_signatures = [
+                "404 - not found",
+                "page not found",
+                "error 404",
+            ]
+
+            if any(sig in snippet for sig in error_signatures):
+                print(f" Skipping {url} (error-like content)")
+                return None
+
+            return resp.text
+
+        except requests.exceptions.RequestException as e:
+            print(f" Error fetching {url}: {e}")
+        return None
+
+    def crawl_pages(self, base_url):
+        """Crawl pages within a single domain."""
+        start_url = self.normalize_url(base_url)
+        to_visit = [start_url]
+        domain = urlparse(start_url).netloc
+
+        while to_visit:
+            current_url = to_visit.pop()
+
+            if current_url in self.visited:
+                continue
+            self.visited.add(current_url)
+
+            print("Visiting:", current_url)
+            html = self.fetch_page(current_url)
+            if not html:
                 continue
 
-            soup = BeautifulSoup(resp.text, "html.parser")
+            soup = BeautifulSoup(html, "html.parser")
             for link in soup.find_all("a", href=True):
                 href = link["href"]
                 full_url = urljoin(current_url, href)
-                
-                
-                normalized_new_url = normalize_url(full_url)
+                normalized = self.normalize_url(full_url)
 
-                parsed = urlparse(normalized_new_url)
-                if parsed.netloc == domain and normalized_new_url not in visited:
-                    to_visit.append(normalized_new_url)
-        except requests.exceptions.RequestException as e:
-            print(f" Error fetching {current_url}: {e}")
-        except Exception as e:
-            print(f" An unexpected error occurred for {current_url}: {e}")
-            
-    return list(visited)
+                parsed = urlparse(normalized)
+                if parsed.netloc == domain and normalized not in self.visited:
+                    to_visit.append(normalized)
 
-def crawl_multiple(base_urls):
-    """
-    Crawls multiple base URLs and returns all unique links.
-    """
-    all_urls = set()
-    for base in base_urls:
-        print(f"\n Crawling from base: {base}")
-        urls = crawl_pages(base)
-        all_urls.update(urls)
-    return list(all_urls)
+    def crawl_multiple(self, base_urls):
+        """Crawl multiple seeds."""
+        for base in base_urls:
+            print(f"\n--- Crawling from base: {base} ---")
+            self.crawl_pages(base)
+        return list(self.visited)
+
+    def validate_urls(self, urls):
+        """Return only URLs that fetch successfully."""
+        valid_urls = []
+        for url in urls:
+            if self.fetch_page(url):
+                valid_urls.append(url)
+            else:
+                print(f"Removing dead URL: {url}")
+        return valid_urls
+
 
 if __name__ == "__main__":
-    
-    print("--- Starting crawl for docs.atlan.com ---")
-    documentation_urls = crawl_pages("https://docs.atlan.com/")
-    with open("data/document_urls.json", "w") as f:
-        json.dump(documentation_urls, f, indent=2)
-    print(f" Saved {len(documentation_urls)} unique URLs to data/document_urls.json")
+    crawler = WebCrawler()
 
-   
-    print("\n--- Starting crawl for developer.atlan.com ---")
-    developer_seeds = [
+    # Seed URLs
+    seed_urls = [
+        "https://docs.atlan.com/",
         "https://developer.atlan.com/",
         "https://developer.atlan.com/getting-started/",
         "https://developer.atlan.com/concepts/"
     ]
-    developer_urls = crawl_multiple(developer_seeds)
-    with open("data/development_urls.json", "w") as f:
-        json.dump(developer_urls, f, indent=2)
-    print(f" Saved {len(developer_urls)} unique URLs to data/development_urls.json")
+
+    print("\n=== Starting crawl ===")
+    all_urls = crawler.crawl_multiple(seed_urls)
+
+    print(f"\nTotal collected URLs (before validation): {len(all_urls)}")
+
+
+
+    # Save only valid URLs
+    with open("data/all_urls.json", "w") as f:
+        json.dump(all_urls, f, indent=2)
+
+    print(f"\n✅ Crawl finished. Saved {len(all_urls)} working URLs to data/all_urls.json")

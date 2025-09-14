@@ -22,7 +22,7 @@ class CustomerSupportAgent:
         self.temperature = temperature
         self.llm = ChatOpenAI(temperature=temperature, model_name=model)
 
-    def classify_ticket(self, state: State):
+    def TicketClassifier(self, state: State):
         """Classify a structured ticket into topic, sentiment, and priority."""
         question = state.get("question", "")
         if not question.strip():
@@ -39,26 +39,53 @@ class CustomerSupportAgent:
         return {
             "subject": result.subject,
             "body": result.body,
-            "topic_tag": result.topic_tag,
+            "topic_tags": result.topic_tags,
             "sentiment": result.sentiment,
             "priority": result.priority,
         }
 
+    # def router(self, state: State):
+    #     q = state["topic_tag"]
+    #     if q in ["How-to", "Product", "Connector"]:
+    #         return "documentation"
+    #     elif q in ["API/SDK"]:
+    #         return "developer"
+    #     else:
+    #         return "last_node"
+ 
     def router(self, state: State):
-        q = state["topic_tag"]
-        if q in ["How-to", "Product", "Connector"]:
-            return "documentation"
-        elif q in ["API/SDK"]:
-            return "developer"
-        else:
+        """
+        Determine the routing based on the topic_tag list.
+        Prioritize 'developer' topics first, then 'documentation', otherwise 'last_node'.
+        """
+        topics = state.get("topic_tags", [])
+        if not topics:  # fallback if empty
             return "last_node"
 
-    def last_node(self, state: State):
-        logger.info("No suitable subgraph found for the given topic tag.")
-        topic = state.get("topic_tag", "")
+        # Define topic-to-route mapping
+        route_mapping = {
+            "How-to": "rag",
+            "Product": "rag",
+            "Connector": "rag",
+            "API/SDK": "rag",
+        }
+
+        # Check each topic in order
+        for topic in topics:
+            route = route_mapping.get(topic)
+            if route:
+                return route
+
+        # Fallback
+        return "last_node"
+
+   
+    def TicketRouter(self, state: State):
+        logger.info("No suitable subgraph found for the given topic tags.")
+        topics = state.get("topic_tags", [])
 
         result = AnswerWithSources(
-            answer=f"This ticket has been classified to {topic} and routed to the appropriate team",
+            answer=f"This ticket has been classified to {', '.join(topics)} and routed to the appropriate team",
             sources=[]
         )
         return {
@@ -69,29 +96,31 @@ class CustomerSupportAgent:
     def build_graph(self):
         parent = StateGraph(State)
 
-        dev_rag = RAGAgent("developmentdb").build()
-        doc_rag = RAGAgent("documentdb").build()
+        # dev_rag = RAGAgent("developmentdb").build()
+        # doc_rag = RAGAgent("documentdb").build()
+        rag = RAGAgent("atlandb").build()
 
-        parent.add_node("classify_ticket", self.classify_ticket)
-        parent.add_node("developer", dev_rag)
-        parent.add_node("documentation", doc_rag)
-        parent.add_node("last_node", self.last_node)
+        parent.add_node("TicketClassifier", self.TicketClassifier)
+        # parent.add_node("developer", dev_rag)
+        # parent.add_node("documentation", doc_rag)
+        parent.add_node("rag", rag)
+        parent.add_node("TicketRouter", self.TicketRouter)
 
-        parent.add_edge(START, "classify_ticket")
+        parent.add_edge(START, "TicketClassifier")
 
         parent.add_conditional_edges(
-            "classify_ticket",
+            "TicketClassifier",
             self.router,
             {
-                "developer": "developer",
-                "documentation": "documentation",
-                "last_node": "last_node",
+                "rag": "rag",
+                "TicketRouter": "TicketRouter",
             }
         )
 
-        parent.add_edge("developer", END)
-        parent.add_edge("documentation", END)
-        parent.add_edge("last_node", END)
+        # parent.add_edge("developer", END)
+        # parent.add_edge("documentation", END)
+        parent.add_edge("rag", END)
+        parent.add_edge("TicketRouter", END)
 
         return parent.compile()
 

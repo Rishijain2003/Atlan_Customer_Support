@@ -71,4 +71,4 @@ if __name__ == "__main__":
     # logger.info("Building Document Vector DB...")
     # build_vector_db("data/document_urls.json", "documentdb")
     logger.info("Building Atlan Vector DB...")
-    build_vector_db("data/all_urls.json", "atlandb")
+    build_vector_db("data/valid_urls.json", "atlandb")
