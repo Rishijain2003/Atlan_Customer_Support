@@ -103,6 +103,8 @@ customer_support/
     ...
 classifier/
     classifier.py         # Bulk ticket classifier
+    sample_tickets.json   #sample ticket file which was given with the problem statement
+    sample_ticket_c.json  #sample tickets which ar eclassified in bulk
     ...
 
 
