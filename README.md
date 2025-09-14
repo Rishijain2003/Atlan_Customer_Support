@@ -67,7 +67,8 @@ The design of this AI pipeline balances accuracy, efficiency, and scalability. E
 ### Overview
 Below is an architecture diagram illustrating how the components of the system interact. The diagram provides a high-level view of the flow from the user interface to the backend components.
 
-**[Insert Architecture Diagram Here]**
+
+![Customer Support Agent](customer_support/Customer_Support_Agent.jpg)
 
 ### Component Interaction
 
