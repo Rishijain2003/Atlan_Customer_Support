@@ -29,7 +29,42 @@ The pipeline begins with a classifier node that processes incoming tickets. The 
 - **LLM Limitations:** While the prompt is highly descriptive, the LLM might misclassify edge cases or hallucinate, especially in ambiguous scenarios. This trade-off was accepted to leverage the LLM's ability to handle diverse and complex inputs.
 
 ---
+## Graph design decision
+### 1. **TicketClassifier Node**
+The TicketClassifier is the entry point of the pipeline and serves as the intelligent preprocessing layer that transforms unstructured user questions into comprehensive, structured support tickets.
 
+#### Architecture Overview
+The system follows a graph-based architecture where the TicketClassifier node processes incoming questions and outputs structured data that drives subsequent routing decisions.
+
+User Question → TicketClassifier → Router → [RAG Node | AssignTeam Node]
+
+
+#### Core Functionality
+When a user question enters the system, the TicketClassifier node performs comprehensive analysis using OpenAI's GPT-4-o-mini model with structured output capabilities to ensure consistent formatting.
+
+**Input Processing:**
+- Receives raw user questions in natural language
+- Maintains original user intent while structuring the data
+
+**Structured Output Schema:**
+The node transforms each question into a standardized ticket format with the following fields:
+```python
+{
+    "subject": str,           # Concise subject line (1 sentence max)
+    "body": str,             # Original user query preserved exactly
+    "topic_tags": List[str], # One or more relevant topic categories
+    "sentiment": str,        # Emotional tone analysis
+    "priority": str          # Business impact assessment
+}
+```
+
+> **Note:** It is very similar to Bulk classifier but this node just takes single query and give its subject and body and classifies the question/ticket into topic_tags and sentiment and priority
+#### Trade-offs:
+
+
+**Flexibility vs. Consistency:** Structured output ensures consistent formatting while allowing nuanced interpretation
+
+**Multi-Tag Complexity:** Supporting multiple tags increases routing flexibility but requires more sophisticated downstream logic
 ### 2. **Routing Logic**
 Once the topics are classified, the ticket is routed in real-time to either the RAG node or the `AssignTeam` node. The `AssignTeam` node shows that the ticket is directed to the appropriate team based on the classified topics.
 
