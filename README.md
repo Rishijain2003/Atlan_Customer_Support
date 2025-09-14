@@ -1,4 +1,5 @@
-# Major Design Decisions and Trade-offs for the AI Pipeline
+# AI-Powered Customer Support Copilot
+## Major Design Decisions and Trade-offs for the AI Pipeline
 
 ## Overview
 The AI pipeline is designed to classify customer support tickets and route them to the appropriate team or generate relevant answers using a Retrieval-Augmented Generation (RAG) approach. Below, we outline the major design decisions and trade-offs made during the development of this pipeline.
@@ -182,3 +183,30 @@ Below is an architecture diagram illustrating how the components of the system i
      ```bash
      streamlit run customer_support/app.py
      ```
+
+---
+
+## Ragas Evaluation
+
+### Evaluation Process
+
+For evaluation, the Ragas library was used. The evaluation process involved the following steps:
+
+1. **Dataset Creation:**
+   - The script `dataset_creation_for_ragas_evaluation.py` was executed to prepare the dataset for evaluation.
+
+2. **Running Ragas Evaluation:**
+   - The script `ragas_evaluator.py` was executed to evaluate the dataset using the Ragas library.
+
+### Metrics Used
+
+The following metrics were used during the evaluation:
+- **Faithfulness**
+- **Answer Relevancy**
+- **Context Precision**
+
+### Ragas Evaluation Results
+
+Below is an example of the terminal output from the Ragas evaluation:
+
+![Ragas Evaluation Terminal Result](customer_support/Ragas_evaluation_terminal_result.jpg)

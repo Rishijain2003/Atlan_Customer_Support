@@ -32,9 +32,7 @@ if __name__ == "__main__":
         logger.error(f"Error: The input file '{INPUT_FILE}' was not found. Please run 'process_for_ragas.py' first.")
         exit()
 
-    # 2. Convert the string representation of the 'contexts' list back into an actual list
-    # When pandas saves a list to CSV, it becomes a string like '["doc1", "doc2"]'.
-    # We need to convert it back to a list object for Ragas.
+
     try:
         df['contexts'] = df['contexts'].apply(ast.literal_eval)
     except Exception as e:
@@ -74,10 +72,3 @@ if __name__ == "__main__":
 
 
 
-# ### How to Use It
-
-# 1.  **Prerequisite:** Make sure you have successfully run the `process_for_ragas.py` script and have the `ragas_input_data.csv` file in your directory.
-# 2.  **Save the Code:** Save the script above as `evaluate_with_ragas.py`.
-# 3.  **Run from Terminal:** Open your terminal in the same project directory and run the script:
-#     bash
-#     python evaluate_with_ragas.py
