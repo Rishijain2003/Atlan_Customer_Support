@@ -4,18 +4,16 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from typing import Literal
-from prompt import classification_prompt
+from customer_support.prompt import classification_prompt
+# from CUSTOMER_SUPPORT_COPILOT.customer_support.prompt import classifier_prompt
 
-# ------------------------
 # Load API key
-# ------------------------
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("Openai_api_key")
 
 
-# ------------------------
+
 # Pydantic Model
-# ------------------------
 class TicketClassification(BaseModel):
     """Classification fields only - no ticket content"""
     topic_tag: Literal[
@@ -37,11 +35,10 @@ llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
 structured_llm = llm.with_structured_output(TicketClassification)
 
 
-# ------------------------
+
 # Classification function
-# ------------------------
 def classify_tickets(input_file, output_file):
-    # Load tickets
+
     with open(input_file, "r", encoding="utf-8") as f:
         tickets = json.load(f)
 
@@ -58,14 +55,13 @@ def classify_tickets(input_file, output_file):
         result = structured_llm.invoke(ticket_classification)
         print("******************************************************************************")
         print(f"Structured Response: {result}")
-        print("******************************************************************************")
 
         # since result is already parsed into Pydantic model, just use .dict()
         results.append({
             "id": ticket["id"],
             "subject": ticket["subject"],
             "body": ticket["body"],
-            **result.dict()
+            **result.model_dump()
         })
 
     # Save to output file
@@ -75,8 +71,9 @@ def classify_tickets(input_file, output_file):
     print(f"✅ Classified tickets saved to {output_file}")
 
 
-# ------------------------
+
 # Run
-# ------------------------
+# if __name__ == "__main__":
+#     classify_tickets("sample_tickets.json", "sample_ticket_classified.json")
 if __name__ == "__main__":
-    classify_tickets("sample_tickets.json", "sample_ticket_classified.json")
+    classify_tickets("classifier/sample_tickets.json", "classifier/sample_ticket_c.json")

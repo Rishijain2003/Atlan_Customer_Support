@@ -1,9 +1,5 @@
 from pydantic import BaseModel, Field
 from typing import List, Literal
-class Page(BaseModel):
-    url: str
-    title: str
-    content: str
 
 class AnswerWithSources(BaseModel):
     """An answer to the question, with sources."""
