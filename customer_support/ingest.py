@@ -7,7 +7,7 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
-
+import streamlit as st
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
@@ -18,8 +18,11 @@ os.environ["OPENAI_API_KEY"] = os.getenv("Openai_api_key")
 def build_vector_db(url_file: str, index_name: str):
     """Build a vector database from a list of URLs into Pinecone."""
     # Init Pinecone client
-    pc = Pinecone(api_key=os.getenv("pinecone_api_key"))
-    env = os.getenv("PINECONE_ENV")
+
+    #pc = Pinecone(api_key=os.getenv("pinecone_api_key"))
+    pc = Pinecone(api_key=st.secrets["pinecone_api_key"])
+    
+    env = st.secrets["PINECONE_ENV"]
 
     # Create index if not exists
     if index_name not in [i["name"] for i in pc.list_indexes()]:

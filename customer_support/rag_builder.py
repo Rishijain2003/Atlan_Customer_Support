@@ -8,14 +8,19 @@ from langgraph.graph import StateGraph, START, END
 from state import State
 from schema import AnswerWithSources
 from prompt import retriever_content
-
+import streamlit as st
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+
+
 load_dotenv()
-os.environ['OPENAI_API_KEY'] = os.getenv('Openai_api_key')
+# os.environ['OPENAI_API_KEY'] = os.getenv('Openai_api_key')
+os.environ["OPENAI_API_KEY"] = st.secrets["Openai_api_key"]
+os.environ["PINECONE_API_KEY"] = st.secrets["PINECONE_API_KEY"]
+os.environ["PINECONE_ENV"] = st.secrets["PINECONE_ENV"]
 
 
 class RAGAgent:
@@ -28,8 +33,8 @@ class RAGAgent:
         self.llm = ChatOpenAI(temperature=0.7, model_name=self.model)
 
         # Connect to Pinecone
-        self.pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-
+        self.pc = Pinecone(api_key=os.getenv("pinecone_api_key"))
+        # self.pc = Pinecone(api_key=st.secrets["pinecone_api_key"])
         # Attach to an existing Pinecone index
         self.vector_store = PineconeVectorStore.from_existing_index(
             index_name=self.index_name,

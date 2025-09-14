@@ -9,6 +9,8 @@ __pycache__/
 *.pyd
 
 customer_support/data/vector_store/
+.streamlit/secrets.toml
+
 # Common environment/IDE stuff
 .env
 .DS_Store
