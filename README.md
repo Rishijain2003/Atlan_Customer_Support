@@ -88,6 +88,24 @@ The RAG node is responsible for generating answers using a Retrieval-Augmented G
   - **OpenAI text-embedding-3-small:** This model was selected for generating embeddings due to its smaller size and efficiency, making it suitable for real-time applications.
 - **Database:**
   - **Pinecone:** Pinecone was chosen as the vector database for its cloud-based architecture, scalability, and ease of integration.
+
+   - **My Approach for Building the Knowledge Base**
+
+      To enable the RAG pipeline to provide accurate answers, I first focused on preparing a reliable knowledge base from developer and documentation sources.
+
+      - **Crawling Websites**
+
+         I built a custom crawler (crawler.py) to automatically fetch all the URLs from base urls
+      - **URL Validation**
+
+         After crawling, I validated the collected URLs (validate_urls.py) to ensure they were accessible and not broken before ingesting them into the system.
+      - **Document Loading**
+
+         Using the validated URLs, I loaded the content into the pipeline with LangChain’s WebBaseLoader function. This allowed me to extract structured text data directly from the web pages for further processing.
+      - **Vector Database Preparation:**
+         The extracted documents were then chunked and converted into embeddings before being stored in Pinecone, making them queryable for the RAG node.
+
+
 - **Chunking Method:**
   - **Text Splitting:** Documents are split into chunks using the Recursive Character Text Splitter for holding Semantic Meaning.This method ensures that the chunks are of manageable size (e.g., 1000 characters with 200-character overlap) for efficient retrieval and processing.
 
